@@ -279,129 +279,150 @@
 
     <script>
         // A simple database of students for each class
-        const studentDatabase = {
-            classA: ['Alice', 'Bob', 'Charlie', 'David', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy'],
-            classB: ['Kevin', 'Lisa', 'Mike', 'Nancy', 'Oscar', 'Paul', 'Quinn', 'Rachel', 'Sam', 'Tina'],
-            classC: ['Umar', 'Vicky', 'Will', 'Xena', 'Yara', 'Zane', 'Alex', 'Bella', 'Cody', 'Diana'],
-            classD: ['Ethan', 'Fiona', 'George', 'Hannah', 'Isaac', 'Jasmine', 'Kyle', 'Laura', 'Mark', 'Nora']
-        };
+const studentDatabase = {
+    classA: ['Alice', 'Bob', 'Charlie', 'David', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy'],
+    classB: ['Kevin', 'Lisa', 'Mike', 'Nancy', 'Oscar', 'Paul', 'Quinn', 'Rachel', 'Sam', 'Tina'],
+    classC: ['Umar', 'Vicky', 'Will', 'Xena', 'Yara', 'Zane', 'Alex', 'Bella', 'Cody', 'Diana'],
+    classD: ['Ethan', 'Fiona', 'George', 'Hannah', 'Isaac', 'Jasmine', 'Kyle', 'Laura', 'Mark', 'Nora']
+};
 
-        /**
-         * Simulates processing a class image with an AI model to detect faces and take attendance.
-         *
-         * @param {string} classId The ID of the class (e.g., 'classA').
-         * @param {File} imageFile The image file to process.
-         * @returns {Promise<Object>} A promise that resolves with the attendance data.
-         */
-        function simulateAttendanceProcessing(classId, imageFile) {
-            return new Promise((resolve, reject) => {
-                // Simulate a network delay for processing
-                setTimeout(() => {
-                    const classStudents = studentDatabase[classId] || [];
-                    
-                    // Randomly determine a subset of students to be present
-                    const presentStudents = [];
-                    const absentStudents = [];
+/**
+ * Simulates processing a class image with an AI model to detect faces and take attendance.
+ *
+ * @param {string} classId The ID of the class (e.g., 'classA').
+ * @param {File} imageFile The image file to process.
+ * @returns {Promise<Object>} A promise that resolves with the attendance data.
+ */
+function simulateAttendanceProcessing(classId, imageFile) {
+    return new Promise((resolve, reject) => {
+        // Simulate a network delay for processing
+        setTimeout(() => {
+            const classStudents = studentDatabase[classId] || [];
+            
+            // Randomly determine a subset of students to be present
+            const presentStudents = [];
+            const absentStudents = [];
 
-                    classStudents.forEach(student => {
-                        // 80% chance of being present
-                        if (Math.random() < 0.8) {
-                            presentStudents.push(student);
-                        } else {
-                            absentStudents.push(student);
-                        }
-                    });
-
-                    resolve({
-                        classId: classId,
-                        totalStudents: classStudents.length,
-                        presentCount: presentStudents.length,
-                        absentCount: absentStudents.length,
-                        presentStudents: presentStudents,
-                        absentStudents: absentStudents,
-                        message: "Attendance processed successfully."
-                    });
-
-                }, 2000); // 2-second delay to simulate processing time
-            });
-        }
-
-        // Function to show the correct content section
-        window.showContent = (contentId) => {
-            // Hide all content sections first
-            const allContentSections = document.querySelectorAll('.content-section');
-            allContentSections.forEach(section => {
-                section.classList.add('hidden');
-            });
-
-            // Show the selected section
-            const selectedSection = document.getElementById(contentId + 'Content');
-            if (selectedSection) {
-                selectedSection.classList.remove('hidden');
-            }
-        };
-
-        // Function to toggle the dropdown menu
-        window.toggleDropdown = (event) => {
-            event.preventDefault(); // Prevent default link behavior
-            const dropdown = event.target.closest('li').querySelector('ul');
-            dropdown.classList.toggle('hidden');
-        };
-
-        // Main function to handle file upload and process attendance
-        window.handleFileUpload = async (classId) => {
-            const fileInput = document.getElementById(classId + 'FileInput');
-            const file = fileInput.files[0];
-            const loadingElement = document.getElementById(classId + 'Loading');
-            const statusElement = document.getElementById(classId + 'Status');
-            const resultsElement = document.getElementById(classId + 'Results');
-
-            if (file) {
-                loadingElement.classList.remove('hidden');
-                statusElement.classList.add('hidden');
-                resultsElement.classList.add('hidden');
-
-                try {
-                    const attendanceData = await simulateAttendanceProcessing(classId, file);
-
-                    loadingElement.classList.add('hidden');
-                    statusElement.textContent = `Attendance process for ${attendanceData.classId} is complete!`;
-                    statusElement.classList.remove('hidden', 'bg-red-100', 'text-red-800');
-                    statusElement.classList.add('bg-green-100', 'text-green-800');
-
-                    // Render the results
-                    resultsElement.innerHTML = `
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <h4 class="text-xl font-bold text-gray-800 mb-2">Present Students (${attendanceData.presentCount})</h4>
-                                <ul class="list-disc list-inside space-y-1">
-                                    ${attendanceData.presentStudents.map(student => `<li class="text-green-600 font-medium">${student}</li>`).join('')}
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 class="text-xl font-bold text-gray-800 mb-2">Absent Students (${attendanceData.absentCount})</h4>
-                                <ul class="list-disc list-inside space-y-1">
-                                    ${attendanceData.absentStudents.map(student => `<li class="text-red-600 font-medium">${student}</li>`).join('')}
-                                </ul>
-                            </div>
-                        </div>
-                    `;
-                    resultsElement.classList.remove('hidden');
-                    
-                } catch (error) {
-                    loadingElement.classList.add('hidden');
-                    statusElement.textContent = `Error processing attendance: ${error.message}`;
-                    statusElement.classList.remove('hidden', 'bg-green-100', 'text-green-800');
-                    statusElement.classList.add('bg-red-100', 'text-red-800');
+            classStudents.forEach(student => {
+                // 80% chance of being present
+                if (Math.random() < 0.8) {
+                    presentStudents.push(student);
+                } else {
+                    absentStudents.push(student);
                 }
-            }
-        };
+            });
 
-        // Dark mode toggle function
-        window.toggleDarkMode = () => {
-            const body = document.body;
-            body.classList.toggle('dark-mode');
-        };
+            resolve({
+                classId: classId,
+                totalStudents: classStudents.length,
+                presentCount: presentStudents.length,
+                absentCount: absentStudents.length,
+                presentStudents: presentStudents,
+                absentStudents: absentStudents,
+                message: "Attendance processed successfully."
+            });
+
+        }, 2000); // 2-second delay to simulate processing time
+    });
+}
+
+// Function to show the correct content section
+window.showContent = (contentId) => {
+    // Hide all content sections first
+    const allContentSections = document.querySelectorAll('.content-section');
+    allContentSections.forEach(section => {
+        section.classList.add('hidden');
+    });
+
+    // Show the selected section
+    const selectedSection = document.getElementById(contentId + 'Content');
+    if (selectedSection) {
+        selectedSection.classList.remove('hidden');
+    }
+};
+
+// Function to toggle the dropdown menu
+window.toggleDropdown = (event) => {
+    event.preventDefault(); // Prevent default link behavior
+    const dropdown = event.target.closest('li').querySelector('ul');
+    dropdown.classList.toggle('hidden');
+};
+
+// Main function to handle file upload and process attendance
+window.handleFileUpload = async (classId) => {
+    const fileInput = document.getElementById(classId + 'FileInput');
+    const file = fileInput.files[0];
+    const loadingElement = document.getElementById(classId + 'Loading');
+    const statusElement = document.getElementById(classId + 'Status');
+    const resultsElement = document.getElementById(classId + 'Results');
+
+    if (file) {
+        // Show loading spinner
+        loadingElement.classList.remove('hidden');
+        statusElement.classList.add('hidden');
+        resultsElement.classList.add('hidden');
+
+        try {
+            // New code to send the file to the webhook
+            const formData = new FormData();
+            formData.append('class_photo', file); // Use 'class_photo' as the key for the file
+
+            const webhookUrl = 'https://hook.eu2.make.com/itg8579vp55nmcc39yu1brndu3i6m459';
+            
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`Webhook request failed with status: ${response.status}`);
+            }
+
+            console.log('File successfully sent to webhook.');
+
+            // Call the attendance simulation function as before
+            const attendanceData = await simulateAttendanceProcessing(classId, file);
+
+            // Hide loading spinner and display results
+            loadingElement.classList.add('hidden');
+            statusElement.textContent = `Attendance process for ${attendanceData.classId} is complete!`;
+            statusElement.classList.remove('hidden', 'bg-red-100', 'text-red-800');
+            statusElement.classList.add('bg-green-100', 'text-green-800');
+
+            // Render the results
+            resultsElement.innerHTML = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Present Students (${attendanceData.presentCount})</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                            ${attendanceData.presentStudents.map(student => `<li class="text-green-600 font-medium">${student}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Absent Students (${attendanceData.absentCount})</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                            ${attendanceData.absentStudents.map(student => `<li class="text-red-600 font-medium">${student}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            resultsElement.classList.remove('hidden');
+            
+        } catch (error) {
+            loadingElement.classList.add('hidden');
+            statusElement.textContent = `Error processing attendance or sending file: ${error.message}`;
+            statusElement.classList.remove('hidden', 'bg-green-100', 'text-green-800');
+            statusElement.classList.add('bg-red-100', 'text-red-800');
+        }
+    }
+};
+
+// Dark mode toggle function
+window.toggleDarkMode = () => {
+    const body = document.body;
+    body.classList.toggle('dark-mode');
+};
     </script>
 </body>
 </html>
+
