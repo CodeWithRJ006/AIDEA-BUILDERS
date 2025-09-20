@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendrix - Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Hide scrollbars on body */
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .dark-mode {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex h-screen">
+
+    <!-- Sidebar / Left Navigation -->
+    <aside class="w-64 bg-gray-900 text-gray-400 p-6 flex flex-col shadow-lg">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-white">attendrix</h1>
+        </div>
+        <nav class="flex-1">
+            <ul>
+                <!-- Menu Header -->
+                <li class="mb-4">
+                    <div class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Menu</div>
+                </li>
+                <!-- Class Dropdown -->
+                <li class="mb-2">
+                    <a href="#" class="flex justify-between items-center py-2 px-4 rounded-md hover:bg-gray-700 transition duration-300" onclick="toggleDropdown(event)">
+                        <span>Class</span>
+                        <i class="fas fa-caret-down text-sm"></i>
+                    </a>
+                    <ul class="ml-4 mt-2 space-y-2 hidden">
+                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showContent('classA')">Class A</a></li>
+                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showContent('classB')">Class B</a></li>
+                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showContent('classC')">Class C</a></li>
+                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showContent('classD')">Class D</a></li>
+                    </ul>
+                </li>
+                <!-- Other Links -->
+                <li class="mb-2">
+                    <a href="#" class="block py-2 px-4 rounded-md hover:bg-gray-700 transition duration-300" onclick="showContent('attendanceReport')">Attendance Report</a>
+                </li>
+                <li class="mb-2">
+                    <a href="#" class="block py-2 px-4 rounded-md hover:bg-gray-700 transition duration-300" onclick="showContent('settings')">Settings</a>
+                </li>
+                <li class="mb-2">
+                    <a href="#" class="block py-2 px-4 rounded-md hover:bg-gray-700 transition duration-300" onclick="showContent('help')">Help</a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 p-8 overflow-y-auto">
+        <!-- Top Navigation -->
+        <header class="bg-white rounded-lg shadow-md p-4 mb-8 flex justify-end items-center">
+            <nav>
+                <ul class="flex items-center space-x-6 text-gray-600 font-medium">
+                    <li><a href="index.html" class="hover:text-indigo-600 transition duration-300">Home</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <!-- Dynamic Content Sections -->
+        <div id="dashboardContent" class="content-section">
+            <div class="p-8 bg-white rounded-lg shadow-md h-full">
+                <h2 class="text-3xl font-bold mb-4 text-gray-800">Welcome to your Dashboard</h2>
+                <p class="text-gray-600">Please select a class from the menu to manage attendance.</p>
+            </div>
+        </div>
+
+        <!-- Class A Attendance Section -->
+        <div id="classAContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Class A Attendance</h2>
+            <p class="text-gray-600 mb-8">Upload a class image to automatically take attendance using AI face recognition. </p>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <i class="fas fa-upload text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Drag & Drop or Click to Upload</h3>
+                <p class="text-gray-500 mb-4">.jpg image only</p>
+                <input type="file" id="classAFileInput" accept="image/jpeg" class="hidden" onchange="handleFileUpload('classA')">
+                <label for="classAFileInput" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full cursor-pointer hover:bg-indigo-700 transition duration-300">
+                    Browse Files
+                </label>
+            </div>
+            <div id="classALoading" class="hidden flex justify-center items-center mt-6">
+                <div class="loading-spinner"></div>
+                <span class="ml-4 text-gray-600">Processing attendance...</span>
+            </div>
+            <div id="classAStatus" class="hidden mt-6 text-center p-4 rounded-md font-semibold"></div>
+            <div id="classAResults" class="hidden mt-8"></div>
+        </div>
+        
+        <!-- Class B Attendance Section -->
+        <div id="classBContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Class B Attendance</h2>
+            <p class="text-gray-600 mb-8">Upload a class image to automatically take attendance using AI face recognition. </p>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <i class="fas fa-upload text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Drag & Drop or Click to Upload</h3>
+                <p class="text-gray-500 mb-4">.jpg image only</p>
+                <input type="file" id="classBFileInput" accept="image/jpeg" class="hidden" onchange="handleFileUpload('classB')">
+                <label for="classBFileInput" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full cursor-pointer hover:bg-indigo-700 transition duration-300">
+                    Browse Files
+                </label>
+            </div>
+            <div id="classBLoading" class="hidden flex justify-center items-center mt-6">
+                <div class="loading-spinner"></div>
+                <span class="ml-4 text-gray-600">Processing attendance...</span>
+            </div>
+            <div id="classBStatus" class="hidden mt-6 text-center p-4 rounded-md font-semibold"></div>
+            <div id="classBResults" class="hidden mt-8"></div>
+        </div>
+
+        <!-- Class C Attendance Section -->
+        <div id="classCContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Class C Attendance</h2>
+            <p class="text-gray-600 mb-8">Upload a class image to automatically take attendance using AI face recognition. </p>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <i class="fas fa-upload text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Drag & Drop or Click to Upload</h3>
+                <p class="text-gray-500 mb-4">.jpg image only</p>
+                <input type="file" id="classCFileInput" accept="image/jpeg" class="hidden" onchange="handleFileUpload('classC')">
+                <label for="classCFileInput" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full cursor-pointer hover:bg-indigo-700 transition duration-300">
+                    Browse Files
+                </label>
+            </div>
+            <div id="classCLoading" class="hidden flex justify-center items-center mt-6">
+                <div class="loading-spinner"></div>
+                <span class="ml-4 text-gray-600">Processing attendance...</span>
+            </div>
+            <div id="classCStatus" class="hidden mt-6 text-center p-4 rounded-md font-semibold"></div>
+            <div id="classCResults" class="hidden mt-8"></div>
+        </div>
+
+        <!-- Class D Attendance Section -->
+        <div id="classDContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Class D Attendance</h2>
+            <p class="text-gray-600 mb-8">Upload a class image to automatically take attendance using AI face recognition. </p>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <i class="fas fa-upload text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Drag & Drop or Click to Upload</h3>
+                <p class="text-gray-500 mb-4">.jpg image only</p>
+                <input type="file" id="classDFileInput" accept="image/jpeg" class="hidden" onchange="handleFileUpload('classD')">
+                <label for="classDFileInput" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full cursor-pointer hover:bg-indigo-700 transition duration-300">
+                    Browse Files
+                </label>
+            </div>
+            <div id="classDLoading" class="hidden flex justify-center items-center mt-6">
+                <div class="loading-spinner"></div>
+                <span class="ml-4 text-gray-600">Processing attendance...</span>
+            </div>
+            <div id="classDStatus" class="hidden mt-6 text-center p-4 rounded-md font-semibold"></div>
+            <div id="classDResults" class="hidden mt-8"></div>
+        </div>
+
+        <!-- Attendance Report Section -->
+        <div id="attendanceReportContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Attendance Report</h2>
+            <p class="text-gray-600 mb-6">Here is a summary of your class attendance history.</p>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Present</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Absent</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Mock data for demonstration -->
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2025-09-19</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Class A</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">28</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">2</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600"><a href="#">View</a></td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2025-09-18</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Class B</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">25</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">5</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600"><a href="#">View</a></td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2025-09-17</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Class A</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">30</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">0</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600"><a href="#">View</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settingsContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Settings</h2>
+            <div class="space-y-6">
+                <!-- User Profile Settings -->
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-700">User Profile</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="profileName" class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" id="profileName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2" placeholder="Your Name">
+                        </div>
+                        <div>
+                            <label for="profileEmail" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="profileEmail" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2" placeholder="your.email@example.com">
+                        </div>
+                        <button class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-indigo-700 transition duration-300">Save Profile</button>
+                    </div>
+                </div>
+
+                <!-- Theme Settings -->
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-700">Display</h3>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="darkModeToggle" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleDarkMode()">
+                        <label for="darkModeToggle" class="ml-2 block text-sm text-gray-700">Enable Dark Mode</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div id="helpContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Help & Support</h2>
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-700">Frequently Asked Questions</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-medium text-gray-800">How does the AI attendance system work?</h4>
+                            <p class="text-gray-600">Our system uses facial recognition technology to identify students from a single image. It compares the faces in the image to a pre-registered database of student photos for the class, automatically marking who is present.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">What file types can I upload?</h4>
+                            <p class="text-gray-600">Currently, the system only supports JPG images for attendance processing.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">Is my data secure?</h4>
+                            <p class="text-gray-600">Yes, we prioritize the security of your data. All images and student information are encrypted and stored securely.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // A simple database of students for each class
+        const studentDatabase = {
+            classA: ['Alice', 'Bob', 'Charlie', 'David', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy'],
+            classB: ['Kevin', 'Lisa', 'Mike', 'Nancy', 'Oscar', 'Paul', 'Quinn', 'Rachel', 'Sam', 'Tina'],
+            classC: ['Umar', 'Vicky', 'Will', 'Xena', 'Yara', 'Zane', 'Alex', 'Bella', 'Cody', 'Diana'],
+            classD: ['Ethan', 'Fiona', 'George', 'Hannah', 'Isaac', 'Jasmine', 'Kyle', 'Laura', 'Mark', 'Nora']
+        };
+
+        /**
+         * Simulates processing a class image with an AI model to detect faces and take attendance.
+         *
+         * @param {string} classId The ID of the class (e.g., 'classA').
+         * @param {File} imageFile The image file to process.
+         * @returns {Promise<Object>} A promise that resolves with the attendance data.
+         */
+        function simulateAttendanceProcessing(classId, imageFile) {
+            return new Promise((resolve, reject) => {
+                // Simulate a network delay for processing
+                setTimeout(() => {
+                    const classStudents = studentDatabase[classId] || [];
+                    
+                    // Randomly determine a subset of students to be present
+                    const presentStudents = [];
+                    const absentStudents = [];
+
+                    classStudents.forEach(student => {
+                        // 80% chance of being present
+                        if (Math.random() < 0.8) {
+                            presentStudents.push(student);
+                        } else {
+                            absentStudents.push(student);
+                        }
+                    });
+
+                    resolve({
+                        classId: classId,
+                        totalStudents: classStudents.length,
+                        presentCount: presentStudents.length,
+                        absentCount: absentStudents.length,
+                        presentStudents: presentStudents,
+                        absentStudents: absentStudents,
+                        message: "Attendance processed successfully."
+                    });
+
+                }, 2000); // 2-second delay to simulate processing time
+            });
+        }
+
+        // Function to show the correct content section
+        window.showContent = (contentId) => {
+            // Hide all content sections first
+            const allContentSections = document.querySelectorAll('.content-section');
+            allContentSections.forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // Show the selected section
+            const selectedSection = document.getElementById(contentId + 'Content');
+            if (selectedSection) {
+                selectedSection.classList.remove('hidden');
+            }
+        };
+
+        // Function to toggle the dropdown menu
+        window.toggleDropdown = (event) => {
+            event.preventDefault(); // Prevent default link behavior
+            const dropdown = event.target.closest('li').querySelector('ul');
+            dropdown.classList.toggle('hidden');
+        };
+
+        // Main function to handle file upload and process attendance
+        window.handleFileUpload = async (classId) => {
+            const fileInput = document.getElementById(classId + 'FileInput');
+            const file = fileInput.files[0];
+            const loadingElement = document.getElementById(classId + 'Loading');
+            const statusElement = document.getElementById(classId + 'Status');
+            const resultsElement = document.getElementById(classId + 'Results');
+
+            if (file) {
+                loadingElement.classList.remove('hidden');
+                statusElement.classList.add('hidden');
+                resultsElement.classList.add('hidden');
+
+                try {
+                    const attendanceData = await simulateAttendanceProcessing(classId, file);
+
+                    loadingElement.classList.add('hidden');
+                    statusElement.textContent = `Attendance process for ${attendanceData.classId} is complete!`;
+                    statusElement.classList.remove('hidden', 'bg-red-100', 'text-red-800');
+                    statusElement.classList.add('bg-green-100', 'text-green-800');
+
+                    // Render the results
+                    resultsElement.innerHTML = `
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-800 mb-2">Present Students (${attendanceData.presentCount})</h4>
+                                <ul class="list-disc list-inside space-y-1">
+                                    ${attendanceData.presentStudents.map(student => `<li class="text-green-600 font-medium">${student}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-800 mb-2">Absent Students (${attendanceData.absentCount})</h4>
+                                <ul class="list-disc list-inside space-y-1">
+                                    ${attendanceData.absentStudents.map(student => `<li class="text-red-600 font-medium">${student}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                    resultsElement.classList.remove('hidden');
+                    
+                } catch (error) {
+                    loadingElement.classList.add('hidden');
+                    statusElement.textContent = `Error processing attendance: ${error.message}`;
+                    statusElement.classList.remove('hidden', 'bg-green-100', 'text-green-800');
+                    statusElement.classList.add('bg-red-100', 'text-red-800');
+                }
+            }
+        };
+
+        // Dark mode toggle function
+        window.toggleDarkMode = () => {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+        };
+    </script>
+</body>
+</html>
