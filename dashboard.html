@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendrix - Dashboard</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.5.7/dist/face-api.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -32,35 +31,41 @@
             background-color: #1a202c;
             color: #e2e8f0;
         }
+        .image-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+        #outputCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex h-screen">
 
-    <!-- Sidebar / Left Navigation -->
     <aside class="w-64 bg-gray-900 text-gray-400 p-6 flex flex-col shadow-lg">
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-white">attendrix</h1>
         </div>
         <nav class="flex-1">
             <ul>
-                <!-- Menu Header -->
                 <li class="mb-4">
                     <div class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Menu</div>
                 </li>
-                <!-- Class Dropdown -->
                 <li class="mb-2">
                     <a href="#" class="flex justify-between items-center py-2 px-4 rounded-md hover:bg-gray-700 transition duration-300" onclick="toggleDropdown(event)">
                         <span>Class</span>
                         <i class="fas fa-caret-down text-sm"></i>
                     </a>
                     <ul class="ml-4 mt-2 space-y-2 hidden">
-                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showContent('classA')">Class A</a></li>
-                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showContent('classB')">Class B</a></li>
-                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showContent('classC')">Class C</a></li>
-                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showContent('classD')">Class D</a></li>
+                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showAttendanceContent('classA')">Class A</a></li>
+                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showAttendanceContent('classB')">Class B</a></li>
+                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showAttendanceContent('classC')">Class C</a></li>
+                        <li><a href="#" class="block py-2 px-4 rounded-md text-sm hover:bg-gray-700 transition duration-300" onclick="showAttendanceContent('classD')">Class D</a></li>
                     </ul>
                 </li>
-                <!-- Other Links -->
                 <li class="mb-2">
                     <a href="#" class="block py-2 px-4 rounded-md hover:bg-gray-700 transition duration-300" onclick="showContent('attendanceReport')">Attendance Report</a>
                 </li>
@@ -74,18 +79,15 @@
         </nav>
     </aside>
 
-    <!-- Main Content Area -->
     <div class="flex-1 p-8 overflow-y-auto">
-        <!-- Top Navigation -->
         <header class="bg-white rounded-lg shadow-md p-4 mb-8 flex justify-end items-center">
             <nav>
                 <ul class="flex items-center space-x-6 text-gray-600 font-medium">
-                    <li><a href="index.html" class="hover:text-indigo-600 transition duration-300">Home</a></li>
+                    <li><a href="#" class="hover:text-indigo-600 transition duration-300" onclick="showContent('dashboard')">Home</a></li>
                 </ul>
             </nav>
         </header>
 
-        <!-- Dynamic Content Sections -->
         <div id="dashboardContent" class="content-section">
             <div class="p-8 bg-white rounded-lg shadow-md h-full">
                 <h2 class="text-3xl font-bold mb-4 text-gray-800">Welcome to your Dashboard</h2>
@@ -93,95 +95,39 @@
             </div>
         </div>
 
-        <!-- Class A Attendance Section -->
-        <div id="classAContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
-            <h2 class="text-3xl font-bold mb-6 text-gray-800">Class A Attendance</h2>
-            <p class="text-gray-600 mb-8">Upload a class image to automatically take attendance using AI face recognition. </p>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <i class="fas fa-upload text-4xl text-gray-400 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">Drag & Drop or Click to Upload</h3>
-                <p class="text-gray-500 mb-4">.jpg image only</p>
-                <input type="file" id="classAFileInput" accept="image/jpeg" class="hidden" onchange="handleFileUpload('classA')">
-                <label for="classAFileInput" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full cursor-pointer hover:bg-indigo-700 transition duration-300">
-                    Browse Files
-                </label>
+        <div id="attendanceContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800" id="attendanceTitle">Class Attendance</h2>
+            
+            <div class="card mb-8">
+                <h3 class="text-2xl font-semibold mb-4 text-gray-700">1. Upload Known Faces (Student Dataset)</h3>
+                <p class="text-gray-500 mb-4">Select multiple images of the students in this class.</p>
+                <input type="file" id="knownFacesInput" accept="image/*" multiple class="w-full text-gray-700 bg-gray-100 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 cursor-pointer">
+                <div id="knownFacesContainer" class="mt-4 flex flex-wrap gap-4"></div>
             </div>
-            <div id="classALoading" class="hidden flex justify-center items-center mt-6">
-                <div class="loading-spinner"></div>
-                <span class="ml-4 text-gray-600">Processing attendance...</span>
+            
+            <div class="flex justify-center gap-4 mb-8">
+                <button id="recognizeButton" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition duration-300 ease-in-out disabled:opacity-50" disabled>
+                    Take Attendance
+                </button>
             </div>
-            <div id="classAStatus" class="hidden mt-6 text-center p-4 rounded-md font-semibold"></div>
-            <div id="classAResults" class="hidden mt-8"></div>
+
+            <div class="card mb-8">
+                <h3 class="text-2xl font-semibold mb-4 text-gray-700">2. Upload Group Photo</h3>
+                <p class="text-gray-500 mb-4">Select the group photo you want to scan and identify faces in.</p>
+                <input type="file" id="groupPhotoInput" accept="image/jpeg" class="w-full text-gray-700 bg-gray-100 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 cursor-pointer">
+                <div class="image-container mx-auto" id="groupPhotoContainer">
+                    <img id="groupPhoto" class="max-w-full h-auto rounded-lg">
+                    <canvas id="outputCanvas"></canvas>
+                </div>
+            </div>
+
+            <div id="statusMessage" class="text-center text-green-600 mb-4 font-semibold"></div>
+            <div id="attendanceResults" class="hidden mt-8"></div>
         </div>
         
-        <!-- Class B Attendance Section -->
-        <div id="classBContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
-            <h2 class="text-3xl font-bold mb-6 text-gray-800">Class B Attendance</h2>
-            <p class="text-gray-600 mb-8">Upload a class image to automatically take attendance using AI face recognition. </p>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <i class="fas fa-upload text-4xl text-gray-400 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">Drag & Drop or Click to Upload</h3>
-                <p class="text-gray-500 mb-4">.jpg image only</p>
-                <input type="file" id="classBFileInput" accept="image/jpeg" class="hidden" onchange="handleFileUpload('classB')">
-                <label for="classBFileInput" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full cursor-pointer hover:bg-indigo-700 transition duration-300">
-                    Browse Files
-                </label>
-            </div>
-            <div id="classBLoading" class="hidden flex justify-center items-center mt-6">
-                <div class="loading-spinner"></div>
-                <span class="ml-4 text-gray-600">Processing attendance...</span>
-            </div>
-            <div id="classBStatus" class="hidden mt-6 text-center p-4 rounded-md font-semibold"></div>
-            <div id="classBResults" class="hidden mt-8"></div>
-        </div>
-
-        <!-- Class C Attendance Section -->
-        <div id="classCContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
-            <h2 class="text-3xl font-bold mb-6 text-gray-800">Class C Attendance</h2>
-            <p class="text-gray-600 mb-8">Upload a class image to automatically take attendance using AI face recognition. </p>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <i class="fas fa-upload text-4xl text-gray-400 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">Drag & Drop or Click to Upload</h3>
-                <p class="text-gray-500 mb-4">.jpg image only</p>
-                <input type="file" id="classCFileInput" accept="image/jpeg" class="hidden" onchange="handleFileUpload('classC')">
-                <label for="classCFileInput" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full cursor-pointer hover:bg-indigo-700 transition duration-300">
-                    Browse Files
-                </label>
-            </div>
-            <div id="classCLoading" class="hidden flex justify-center items-center mt-6">
-                <div class="loading-spinner"></div>
-                <span class="ml-4 text-gray-600">Processing attendance...</span>
-            </div>
-            <div id="classCStatus" class="hidden mt-6 text-center p-4 rounded-md font-semibold"></div>
-            <div id="classCResults" class="hidden mt-8"></div>
-        </div>
-
-        <!-- Class D Attendance Section -->
-        <div id="classDContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
-            <h2 class="text-3xl font-bold mb-6 text-gray-800">Class D Attendance</h2>
-            <p class="text-gray-600 mb-8">Upload a class image to automatically take attendance using AI face recognition. </p>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <i class="fas fa-upload text-4xl text-gray-400 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">Drag & Drop or Click to Upload</h3>
-                <p class="text-gray-500 mb-4">.jpg image only</p>
-                <input type="file" id="classDFileInput" accept="image/jpeg" class="hidden" onchange="handleFileUpload('classD')">
-                <label for="classDFileInput" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full cursor-pointer hover:bg-indigo-700 transition duration-300">
-                    Browse Files
-                </label>
-            </div>
-            <div id="classDLoading" class="hidden flex justify-center items-center mt-6">
-                <div class="loading-spinner"></div>
-                <span class="ml-4 text-gray-600">Processing attendance...</span>
-            </div>
-            <div id="classDStatus" class="hidden mt-6 text-center p-4 rounded-md font-semibold"></div>
-            <div id="classDResults" class="hidden mt-8"></div>
-        </div>
-
-        <!-- Attendance Report Section -->
         <div id="attendanceReportContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
             <h2 class="text-3xl font-bold mb-6 text-gray-800">Attendance Report</h2>
             <p class="text-gray-600 mb-6">Here is a summary of your class attendance history.</p>
-            
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -194,7 +140,6 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <!-- Mock data for demonstration -->
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2025-09-19</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Class A</td>
@@ -221,11 +166,9 @@
             </div>
         </div>
 
-        <!-- Settings Section -->
         <div id="settingsContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
             <h2 class="text-3xl font-bold mb-6 text-gray-800">Settings</h2>
             <div class="space-y-6">
-                <!-- User Profile Settings -->
                 <div>
                     <h3 class="text-xl font-semibold mb-2 text-gray-700">User Profile</h3>
                     <div class="space-y-4">
@@ -241,7 +184,6 @@
                     </div>
                 </div>
 
-                <!-- Theme Settings -->
                 <div>
                     <h3 class="text-xl font-semibold mb-2 text-gray-700">Display</h3>
                     <div class="flex items-center">
@@ -252,7 +194,6 @@
             </div>
         </div>
 
-        <!-- Help Section -->
         <div id="helpContent" class="content-section hidden p-8 bg-white rounded-lg shadow-md">
             <h2 class="text-3xl font-bold mb-6 text-gray-800">Help & Support</h2>
             <div class="space-y-8">
@@ -277,153 +218,226 @@
         </div>
     </div>
 
-    <script>
-        // A simple database of students for each class
-const studentDatabase = {
-    classA: ['Alice', 'Bob', 'Charlie', 'David', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy'],
-    classB: ['Kevin', 'Lisa', 'Mike', 'Nancy', 'Oscar', 'Paul', 'Quinn', 'Rachel', 'Sam', 'Tina'],
-    classC: ['Umar', 'Vicky', 'Will', 'Xena', 'Yara', 'Zane', 'Alex', 'Bella', 'Cody', 'Diana'],
-    classD: ['Ethan', 'Fiona', 'George', 'Hannah', 'Isaac', 'Jasmine', 'Kyle', 'Laura', 'Mark', 'Nora']
-};
+    <script type="module">
+        let currentClassId = '';
+        const studentDatabase = {
+            classA: ['Alice', 'Bob', 'Charlie', 'David', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy'],
+            classB: ['Kevin', 'Lisa', 'Mike', 'Nancy', 'Oscar', 'Paul', 'Quinn', 'Rachel', 'Sam', 'Tina'],
+            classC: ['Umar', 'Vicky', 'Will', 'Xena', 'Yara', 'Zane', 'Alex', 'Bella', 'Cody', 'Diana'],
+            classD: ['Ethan', 'Fiona', 'George', 'Hannah', 'Isaac', 'Jasmine', 'Kyle', 'Laura', 'Mark', 'Nora']
+        };
 
-/**
- * Simulates processing a class image with an AI model to detect faces and take attendance.
- *
- * @param {string} classId The ID of the class (e.g., 'classA').
- * @param {File} imageFile The image file to process.
- * @returns {Promise<Object>} A promise that resolves with the attendance data.
- */
-function simulateAttendanceProcessing(classId, imageFile) {
-    return new Promise((resolve, reject) => {
-        // Simulate a network delay for processing
-        setTimeout(() => {
-            const classStudents = studentDatabase[classId] || [];
+        const knownFacesInput = document.getElementById('knownFacesInput');
+        const groupPhotoInput = document.getElementById('groupPhotoInput');
+        const knownFacesContainer = document.getElementById('knownFacesContainer');
+        const groupPhotoImg = document.getElementById('groupPhoto');
+        const outputCanvas = document.getElementById('outputCanvas');
+        const recognizeButton = document.getElementById('recognizeButton');
+        const statusMessage = document.getElementById('statusMessage');
+        const attendanceTitle = document.getElementById('attendanceTitle');
+        const attendanceResults = document.getElementById('attendanceResults');
+        
+        let labeledDescriptors = [];
+        let faceMatcher;
+
+        async function loadModels() {
+            statusMessage.textContent = 'Loading AI models... please wait';
+            try {
+                await faceapi.nets.ssdMobilenetv1.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
+                await faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
+                await faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
+                statusMessage.textContent = 'Models loaded successfully! Select known faces and a group photo.';
+            } catch (error) {
+                console.error("Failed to initialize:", error);
+                statusMessage.textContent = "Initialization failed. Please check your internet connection and try again.";
+            }
+        }
+
+        function showContent(contentId) {
+            const allContentSections = document.querySelectorAll('.content-section');
+            allContentSections.forEach(section => section.classList.add('hidden'));
+            document.getElementById(contentId + 'Content').classList.remove('hidden');
+        }
+
+        window.toggleDropdown = (event) => {
+            event.preventDefault();
+            const dropdown = event.target.closest('li').querySelector('ul');
+            dropdown.classList.toggle('hidden');
+        };
+
+        window.toggleDarkMode = () => {
+            document.body.classList.toggle('dark-mode');
+        };
+
+        window.showAttendanceContent = (classId) => {
+            currentClassId = classId;
+            showContent('attendance');
+            attendanceTitle.textContent = `${classId.charAt(0).toUpperCase() + classId.slice(1)} Attendance`;
+            statusMessage.textContent = 'Select known faces and a group photo.';
+            clearAttendanceView();
+        };
+        
+        function clearAttendanceView() {
+            knownFacesInput.value = null;
+            groupPhotoInput.value = null;
+            knownFacesContainer.innerHTML = '';
+            groupPhotoImg.src = '';
+            const ctx = outputCanvas.getContext('2d');
+            ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+            attendanceResults.classList.add('hidden');
+            recognizeButton.disabled = true;
+        }
+
+        function resizeImage(img, maxWidth = 600, maxHeight = 600) {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = height * (maxWidth / width);
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width = width * (maxHeight / height);
+                    height = maxHeight;
+                }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            return canvas;
+        }
+
+        async function createLabeledFaceDescriptors(files) {
+            const descriptors = [];
+            let facesFound = 0;
+            statusMessage.textContent = `Processing known faces for ${currentClassId}...`;
+            knownFacesContainer.innerHTML = '';
+            for (const file of files) {
+                const label = file.name.split('.')[0];
+                try {
+                    const img = await faceapi.bufferToImage(file);
+                    const resizedCanvas = resizeImage(img);
+                    const detection = await faceapi.detectSingleFace(resizedCanvas).withFaceLandmarks().withFaceDescriptor();
+
+                    if (detection) {
+                        descriptors.push(new faceapi.LabeledFaceDescriptors(label, [new Float32Array(detection.descriptor)]));
+                        const imgPreview = document.createElement('img');
+                        imgPreview.src = URL.createObjectURL(file);
+                        imgPreview.alt = label;
+                        imgPreview.className = "w-24 h-24 object-cover rounded-full border-2 border-green-500 shadow";
+                        knownFacesContainer.appendChild(imgPreview);
+                        facesFound++;
+                    } else {
+                        console.log(`Could not detect face in image: ${file.name}`);
+                    }
+                } catch (e) {
+                    console.error(`Error processing file ${file.name}:`, e);
+                }
+            }
+            if (facesFound === 0) {
+                statusMessage.textContent = 'No faces detected in the uploaded known faces. Please try again with clear photos.';
+            } else {
+                statusMessage.textContent = `${facesFound} known faces processed. Ready for recognition.`;
+                labeledDescriptors = descriptors;
+            }
+            checkReadyToRecognize();
+        }
+
+        function checkReadyToRecognize() {
+            if (labeledDescriptors.length > 0 && groupPhotoImg.src) {
+                faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.7);
+                recognizeButton.disabled = false;
+            } else {
+                recognizeButton.disabled = true;
+            }
+        }
+
+        knownFacesInput.addEventListener('change', (event) => {
+            const files = Array.from(event.target.files);
+            if (files.length > 0) {
+                createLabeledFaceDescriptors(files);
+            }
+        });
+
+        groupPhotoInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const imageUrl = URL.createObjectURL(file);
+                groupPhotoImg.src = imageUrl;
+                groupPhotoImg.onload = () => {
+                    outputCanvas.width = groupPhotoImg.width;
+                    outputCanvas.height = groupPhotoImg.height;
+                    checkReadyToRecognize();
+                };
+            }
+        });
+        
+        recognizeButton.addEventListener('click', async () => {
+            if (!groupPhotoImg.src || labeledDescriptors.length === 0) {
+                statusMessage.textContent = "Please upload both a group photo and known faces.";
+                return;
+            }
+            statusMessage.textContent = 'Scanning group photo...';
             
-            // Randomly determine a subset of students to be present
-            const presentStudents = [];
-            const absentStudents = [];
+            const detections = await faceapi.detectAllFaces(groupPhotoImg, new faceapi.SsdMobilenetv1Options()).withFaceLandmarks().withFaceDescriptors();
+            
+            if (detections.length === 0) {
+                statusMessage.textContent = 'No faces detected in the group photo. Please upload a different image.';
+                return;
+            }
+            
+            const resizedDetections = faceapi.resizeResults(detections, { width: groupPhotoImg.width, height: groupPhotoImg.height });
+            
+            const ctx = outputCanvas.getContext('2d');
+            ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+            faceapi.matchDimensions(outputCanvas, { width: groupPhotoImg.width, height: groupPhotoImg.height });
 
-            classStudents.forEach(student => {
-                // 80% chance of being present
-                if (Math.random() < 0.8) {
-                    presentStudents.push(student);
-                } else {
-                    absentStudents.push(student);
+            const presentStudents = new Set();
+            const allStudents = new Set(studentDatabase[currentClassId]);
+
+            resizedDetections.forEach(detection => {
+                const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+                const box = detection.detection.box;
+                const label = bestMatch.label;
+                const distance = Math.round(bestMatch.distance * 100) / 100;
+                const drawLabel = `${label} (${distance})`;
+                
+                const drawBox = new faceapi.draw.DrawBox(box, { label: drawLabel });
+                drawBox.draw(outputCanvas);
+                
+                if (label !== 'unknown') {
+                    presentStudents.add(label);
                 }
             });
 
-            resolve({
-                classId: classId,
-                totalStudents: classStudents.length,
-                presentCount: presentStudents.length,
-                absentCount: absentStudents.length,
-                presentStudents: presentStudents,
-                absentStudents: absentStudents,
-                message: "Attendance processed successfully."
-            });
-
-        }, 2000); // 2-second delay to simulate processing time
-    });
-}
-
-// Function to show the correct content section
-window.showContent = (contentId) => {
-    // Hide all content sections first
-    const allContentSections = document.querySelectorAll('.content-section');
-    allContentSections.forEach(section => {
-        section.classList.add('hidden');
-    });
-
-    // Show the selected section
-    const selectedSection = document.getElementById(contentId + 'Content');
-    if (selectedSection) {
-        selectedSection.classList.remove('hidden');
-    }
-};
-
-// Function to toggle the dropdown menu
-window.toggleDropdown = (event) => {
-    event.preventDefault(); // Prevent default link behavior
-    const dropdown = event.target.closest('li').querySelector('ul');
-    dropdown.classList.toggle('hidden');
-};
-
-// Main function to handle file upload and process attendance
-window.handleFileUpload = async (classId) => {
-    const fileInput = document.getElementById(classId + 'FileInput');
-    const file = fileInput.files[0];
-    const loadingElement = document.getElementById(classId + 'Loading');
-    const statusElement = document.getElementById(classId + 'Status');
-    const resultsElement = document.getElementById(classId + 'Results');
-
-    if (file) {
-        // Show loading spinner
-        loadingElement.classList.remove('hidden');
-        statusElement.classList.add('hidden');
-        resultsElement.classList.add('hidden');
-
-        try {
-            // New code to send the file to the webhook
-            const formData = new FormData();
-            formData.append('class_photo', file); // Use 'class_photo' as the key for the file
-
-            const webhookUrl = 'https://hook.eu2.make.com/itg8579vp55nmcc39yu1brndu3i6m459';
+            const presentList = Array.from(presentStudents);
+            const absentList = Array.from(allStudents).filter(student => !presentStudents.has(student));
             
-            const response = await fetch(webhookUrl, {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error(`Webhook request failed with status: ${response.status}`);
-            }
-
-            console.log('File successfully sent to webhook.');
-
-            // Call the attendance simulation function as before
-            const attendanceData = await simulateAttendanceProcessing(classId, file);
-
-            // Hide loading spinner and display results
-            loadingElement.classList.add('hidden');
-            statusElement.textContent = `Attendance process for ${attendanceData.classId} is complete!`;
-            statusElement.classList.remove('hidden', 'bg-red-100', 'text-red-800');
-            statusElement.classList.add('bg-green-100', 'text-green-800');
-
-            // Render the results
-            resultsElement.innerHTML = `
+            // Display results
+            attendanceResults.innerHTML = `
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <h4 class="text-xl font-bold text-gray-800 mb-2">Present Students (${attendanceData.presentCount})</h4>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Present Students (${presentList.length})</h4>
                         <ul class="list-disc list-inside space-y-1">
-                            ${attendanceData.presentStudents.map(student => `<li class="text-green-600 font-medium">${student}</li>`).join('')}
+                            ${presentList.map(student => `<li class="text-green-600 font-medium">${student}</li>`).join('')}
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold text-gray-800 mb-2">Absent Students (${attendanceData.absentCount})</h4>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Absent Students (${absentList.length})</h4>
                         <ul class="list-disc list-inside space-y-1">
-                            ${attendanceData.absentStudents.map(student => `<li class="text-red-600 font-medium">${student}</li>`).join('')}
+                            ${absentList.map(student => `<li class="text-red-600 font-medium">${student}</li>`).join('')}
                         </ul>
                     </div>
                 </div>
             `;
-            resultsElement.classList.remove('hidden');
-            
-        } catch (error) {
-            loadingElement.classList.add('hidden');
-            statusElement.textContent = `Error processing attendance or sending file: ${error.message}`;
-            statusElement.classList.remove('hidden', 'bg-green-100', 'text-green-800');
-            statusElement.classList.add('bg-red-100', 'text-red-800');
-        }
-    }
-};
+            attendanceResults.classList.remove('hidden');
+            statusMessage.textContent = `Attendance processed successfully for ${currentClassId}.`;
+        });
 
-// Dark mode toggle function
-window.toggleDarkMode = () => {
-    const body = document.body;
-    body.classList.toggle('dark-mode');
-};
+        window.onload = loadModels;
     </script>
 </body>
 </html>
-
-
