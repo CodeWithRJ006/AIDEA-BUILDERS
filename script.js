@@ -231,6 +231,19 @@ if (document.getElementById('dashboardContent')) {
             `;
             attendanceResults.classList.remove('hidden');
             lucide.createIcons();
+
+            // Persist attendance log to backend
+            fetch('/api/attendance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    classId: currentClassId,
+                    timestamp: new Date().toISOString(),
+                    present: Array.from(presentStudents),
+                    absent: absentList
+                })
+            }).catch(err => console.error('Failed to persist attendance:', err));
+
             statusMessage.textContent = `Analysis Completed Successfully.`;
             recognizeButton.disabled = false;
         });
