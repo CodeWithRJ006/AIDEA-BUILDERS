@@ -1,17 +1,17 @@
-# Attendrix – Edge‑Integrated Facial Recognition Attendance System
+# Attendrix – Edge-Integrated Facial Recognition Attendance System
 
-[!NOTE]
-This repository provides a lightweight, edge‑compute facial recognition pipeline for real‑time attendance tracking.
+> **Note:** A lightweight, edge-compute facial recognition pipeline for real-time attendance tracking.
 
 ## Architecture Overview
+
 ```mermaid
 flowchart TD
-    A[Camera Video Feed] --> B[Client‑Side Frame Capture]
-    B --> C[Face Detection (face‑api.js)]
-    C --> D[Feature Extraction & Descriptor]
-    D --> E[Face Matching Engine]
-    E --> F[Persistence Layer (Node.js JSON store)]
-    F --> G[Live Dashboard (HTML/JS)]
+    A["Camera Video Feed"] --> B["Client-Side Frame Capture"]
+    B --> C["Face Detection (face-api.js)"]
+    C --> D["Feature Extraction & Landmark Descriptor"]
+    D --> E["Face Matching Engine (Threshold 0.48)"]
+    E --> F["Persistence Layer (Node.js JSON Store)"]
+    F --> G["Live Dashboard (HTML/JS)"]
     style A fill:#6C8EBF,stroke:#333,stroke-width:2px
     style B fill:#6CBF8E,stroke:#333,stroke-width:2px
     style C fill:#BF6C6C,stroke:#333,stroke-width:2px
@@ -22,18 +22,24 @@ flowchart TD
 ```
 
 ## Quickstart
+
 ```bash
-# Clone and install dependencies
+# Clone and enter directory
 git clone https://github.com/CodeWithRJ006/Attendrix.git
 cd Attendrix
+
+# Install dependencies
 npm install
-# Start backend + serve static files
+
+# Start backend & serve frontend
 npm start
 ```
-Open `http://localhost:3000` in a browser.
+
+Open `http://localhost:3000` in your browser.
 
 ## Deployment
-- **Render** – one‑click deploy using `render.yaml` (included).
+
+- **Render** – one-click deploy using `render.yaml` (included).
 - **Vercel** – static site with API rewrites using `vercel.json` (included).
 
 ---

@@ -14,7 +14,6 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '..')));
 
 const DATA_FILE = path.join(__dirname, 'data.json');
-// Initialize data file if missing
 if (!fs.existsSync(DATA_FILE)) {
   fs.writeFileSync(DATA_FILE, JSON.stringify([]));
 }
@@ -35,6 +34,12 @@ app.post('/api/attendance', (req, res) => {
   data.push(entry);
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
   res.status(201).json({ message: 'Attendance recorded' });
+});
+
+// DELETE all attendance entries
+app.delete('/api/attendance', (req, res) => {
+  fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2));
+  res.json({ message: 'Attendance data cleared' });
 });
 
 app.listen(PORT, () => {
